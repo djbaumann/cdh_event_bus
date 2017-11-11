@@ -16,6 +16,7 @@
 
 #include "utility.h"
 #include "tenticle.h"
+#include "watchdog.h"
 
 class octopOS {
 public:
@@ -43,8 +44,17 @@ private:
     static std::vector<int> semids;
     static intptr_t *shared_ptr, *shared_end_ptr;
 
-    static std::map<std::string, std::tuple<unsigned, key_t,
-        std::vector<std::pair<unsigned, long>>>> topic_data;
+  // topic_data: map[topic name, TopicInfo]
+  // TopicInfo := (offset into shared mem,
+  //               reference to shared mem (also a pointer),
+  //               array of subscribers)
+    static std::map<std::string,
+	           std::tuple<unsigned,
+			                  key_t,
+			                  std::vector<std::pair<unsigned, long>>
+                        >
+                   > topic_data;
+
     static std::mutex topic_data_rdlock, topic_data_rdtry,
         topic_data_wrlock, topic_data_lock;
     static unsigned topic_data_readers, topic_data_writers;
@@ -53,7 +63,7 @@ private:
     void topic_reader_out();
     void topic_writer_in();
     void topic_writer_out();
-
+    static WatchDog watchdogTimer;
     octopOS();
 };
 
